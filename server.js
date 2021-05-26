@@ -48,20 +48,24 @@ function menu() {
         }
 
         case "Add employee": {
-          getManager();
+          addEmployee();
           break;
         }
         case "Add role": {
           addRole();
         }
+        case "Add department": {
+          addDepartment();
+          break;
+        }
 
         case "Update employee role": {
-          getManager();
+          updateRole();
           break;
         }
 
         case "exit": {
-          ConnectionError.end();
+          connection.end();
           break;
         }
       }
@@ -339,6 +343,94 @@ const addEmployee = () => {
           if (err) throw err;
           console.log("New employee added!");
           menu();
+        }
+      );
+    });
+};
+
+const addRole = () => {
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        message: "What is the title of the role?",
+        name: "title",
+      },
+      {
+        type: "input",
+        message: "What is the yearly salary for the role?",
+        name: "salary",
+      },
+      {
+        type: "list",
+        message:
+          "What department is this role part of? (1-Legal, 2-Finance, 3-IT, 4-Sales, 5-Management",
+        name: "department",
+        choices: [1, 2, 3, 4, 5],
+      },
+    ])
+    .then((res) => {
+      console.log(res);
+      const query = connection.query(
+        "INSERT INTO role SET ?",
+        {
+          title: res.title,
+          salary: res.salary,
+          department_id: Number(res.department),
+        },
+        (err, res) => {
+          if (err) throw err;
+          console.log("New role added!");
+          menu();
+        }
+      );
+    });
+};
+
+const addDepartment = () => {
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        message: "What is the name of the department?",
+        name: "name",
+      },
+    ])
+    .then((res) => {
+      console.log(res);
+      const query = connection.query(
+        "INSERT INTO department SET ?",
+        {
+          name: res.name,
+        },
+        (err, res) => {
+          if (err) throw err;
+          console.log("New department added!");
+          menu();
+        }
+      );
+    });
+};
+
+const updateRole = () => {
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        message: "What is their employee ID?",
+        name: "employee",
+      },
+    ])
+    .then((res) => {
+      console.log(res.employee);
+      const query = connection.query(
+        "DELETE FROM employee WHERE ?",
+        {
+          id: res.employee,
+        },
+        (err, res) => {
+          if (err) throw err;
+          addEmployee();
         }
       );
     });
