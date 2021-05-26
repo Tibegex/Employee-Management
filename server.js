@@ -1,18 +1,15 @@
-// const express = require("express");
-
+const mysql = require("mysql");
 const inquirer = require("inquirer");
+const Choice = require("inquirer/lib/objects/choice");
 require("dotenv").config();
 const cTable = require("console.table");
-const Choice = require("inquirer/lib/objects/choice");
-const mysql = require("mysql");
-// const mysql2 = require("mysql2");
 
 const connection = mysql.createConnection({
   host: "localhost",
   port: 3306,
-  database: process.env.DB_NAME,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
 });
 
 function menu() {
@@ -53,6 +50,7 @@ function menu() {
         }
         case "Add role": {
           addRole();
+          break;
         }
         case "Add department": {
           addDepartment();
@@ -73,11 +71,14 @@ function menu() {
 }
 
 const getAllEmployees = () => {
+  //query for all rows in employee table
   connection.query(
     "SELECT * FROM employee JOIN role ON employee.role_id = role.id JOIN department ON department.id = role.department_id",
     (err, res) => {
       if (err) throw err;
+      // Log all results of the SELECT statement in a table
       console.table(res);
+      //returns user to main menu
       menu();
     }
   );
@@ -322,12 +323,6 @@ const addEmployee = () => {
         name: "role",
         choices: [1, 2, 3, 4, 5, 6, 7, 8],
       },
-      // {
-      //   type: "rawlist",
-      //   message: "Who is the Employee's Manager?",
-      //   name: "manager",
-      //   choices: managerArray,
-      // },
     ])
     .then((res) => {
       console.log(res);
@@ -337,7 +332,6 @@ const addEmployee = () => {
           first_name: res.firstName,
           last_name: res.lastName,
           role_id: Number(res.role),
-          // manager_id: Number(res.manager),
         },
         (err, res) => {
           if (err) throw err;
@@ -370,7 +364,6 @@ const addRole = () => {
       },
     ])
     .then((res) => {
-      console.log(res);
       const query = connection.query(
         "INSERT INTO role SET ?",
         {
@@ -406,6 +399,7 @@ const addDepartment = () => {
         (err, res) => {
           if (err) throw err;
           console.log("New department added!");
+          console.log(res);
           menu();
         }
       );
@@ -423,6 +417,7 @@ const updateRole = () => {
     ])
     .then((res) => {
       console.log(res.employee);
+
       const query = connection.query(
         "DELETE FROM employee WHERE ?",
         {
@@ -436,4 +431,8 @@ const updateRole = () => {
     });
 };
 
-menu();
+connection.connect((err) => {
+  if (err) throw err;
+  console.log(`connected as id ${connection.threadId}\n`);
+  menu();
+});
